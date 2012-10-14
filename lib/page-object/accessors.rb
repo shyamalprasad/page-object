@@ -18,8 +18,8 @@ module PageObject
     #
     def page_url(url)
       define_method("goto") do
-        url = url.kind_of?(Symbol) ? self.send(url) : url
-        platform.navigate_to url
+        lookup = url.kind_of?(Symbol) ? self.send(url) : url
+        platform.navigate_to lookup
       end
     end
     alias_method :direct_url, :page_url

@@ -143,16 +143,23 @@ describe PageObject::Accessors do
       WatirAccessorsTestPageObject.new(watir_browser, true)
     end
 
-    it "should call a method when page_url called with a symbol" do
+    it "should dynamically build url if page_url called with a symbol" do
       class SymbolPageUrl
         include PageObject
         page_url :custom_url
-        def custom_url
-          "custom"
+
+        attr_reader :custom_url
+        def initialize(b,v,url)
+          @custom_url = url
+          super(b,v)
         end
       end
       watir_browser.should_receive(:goto).with('custom')
-      SymbolPageUrl.new(watir_browser, true)
+      SymbolPageUrl.new(watir_browser, true, 'custom')
+
+      watir_browser.should_receive(:goto).with('different')
+      SymbolPageUrl.new(watir_browser, true, 'different')
+
     end
 
     it "should not navigate to a page when not requested" do
