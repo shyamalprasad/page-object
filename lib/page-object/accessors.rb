@@ -1,3 +1,5 @@
+require 'erb'
+
 module PageObject
   #
   # Contains the class level methods that are inserted into your page objects
@@ -10,6 +12,24 @@ module PageObject
   module Accessors
 
     #
+    # Set some values that can be used withing the class.  This is
+    # typically used to provide values that help build dynamic urls in
+    # the page_url method
+    #
+    # @param [Hash] the value to set the params
+    #
+    def params=(the_params)
+      @params = the_params
+    end
+
+    #
+    # Return the params that exist on this page class
+    #
+    def params
+      @params ||= {}
+    end
+
+    #
     # Specify the url for the page.  A call to this method will generate a
     # 'goto' method to take you to the page.
     #
@@ -19,7 +39,10 @@ module PageObject
     def page_url(url)
       define_method("goto") do
         lookup = url.kind_of?(Symbol) ? self.send(url) : url
-        platform.navigate_to lookup
+        erb = ERB.new(%Q{#{lookup}})
+        merged_params = self.class.instance_variable_get("@merged_params")
+        params = merged_params ? merged_params : self.class.params
+        platform.navigate_to erb.result(binding)
       end
     end
     alias_method :direct_url, :page_url
